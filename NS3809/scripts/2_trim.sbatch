@@ -6,7 +6,7 @@
 #SBATCH --mem=16GB
 #SBATCH --qos=timgarrett-b
 #SBATCH --account=timgarrett
-#SBATCH -t 04:00:00
+#SBATCH -t 16:00:00
 #SBATCH --output=/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/logs/trim_galore.%j.out
 #SBATCH --error=/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/logs/trim_galore.%j.err
 #SBATCH --array=1-16
@@ -34,7 +34,7 @@ SAMPLE=${SAMPLES[$SLURM_ARRAY_TASK_ID-1]}
 OUT_DIR="/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/results/trimgalore"
 
 # Run Trim Galore!
-trim_galore --paired ${BASE_DIR}/${SAMPLE}_combined_R1.fastq.gz ${BASE_DIR}/${SAMPLE}_combined_R2.fastq.gz -o ${OUT_DIR}
+trim_galore --cores 4 --paired ${BASE_DIR}/${SAMPLE}_combined_R1.fastq.gz ${BASE_DIR}/${SAMPLE}_combined_R2.fastq.gz -o ${OUT_DIR}
 
 echo -e "\nInfo: Trim Galore! job completed on $(date) on $(hostname).\n"
 ##End
