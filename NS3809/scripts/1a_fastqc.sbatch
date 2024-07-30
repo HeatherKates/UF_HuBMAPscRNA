@@ -24,8 +24,14 @@ module load fastqc/0.12.1
 # Define the base directory
 BASE_DIR="/orange/timgarrett/Campbell_Thompson/NS3809/NS-3809_NS3810-MBrusko/NS-3809-MBrusko_10B-22K5WnLT3-Lane4-6"
 
+# Define the concatenated files directory
+CONCAT_DIR="/orange/timgarrett/Campbell_Thompson/NS3809/Concatenated"
+
+# Create the concatenated directory if it doesn't exist
+mkdir -p ${CONCAT_DIR}
+
 # Create an array of unique sample identifiers dynamically
-SAMPLES=($(ls | cut -d "_" -f 1,2,3 | sort | uniq))
+SAMPLES=($(ls ${BASE_DIR} | cut -d "_" -f 1,2,3 | sort | uniq))
 
 # Get the sample for the current task
 SAMPLE=${SAMPLES[$SLURM_ARRAY_TASK_ID-1]}
@@ -34,11 +40,11 @@ SAMPLE=${SAMPLES[$SLURM_ARRAY_TASK_ID-1]}
 OUT_DIR="/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/results/fastqc"
 
 # Concatenate files from all lanes
-cat ${BASE_DIR}/${SAMPLE}_*_R1_001.fastq.gz > ${BASE_DIR}/${SAMPLE}_combined_R1.fastq.gz
-cat ${BASE_DIR}/${SAMPLE}_*_R2_001.fastq.gz > ${BASE_DIR}/${SAMPLE}_combined_R2.fastq.gz
+cat ${BASE_DIR}/${SAMPLE}_*_R1_001.fastq.gz > ${CONCAT_DIR}/${SAMPLE}_combined_R1.fastq.gz
+cat ${BASE_DIR}/${SAMPLE}_*_R2_001.fastq.gz > ${CONCAT_DIR}/${SAMPLE}_combined_R2.fastq.gz
 
 # Run FastQC
-fastqc ${BASE_DIR}/${SAMPLE}_combined_R1.fastq.gz ${BASE_DIR}/${SAMPLE}_combined_R2.fastq.gz -o ${OUT_DIR}
+fastqc --threads 2 ${CONCAT_DIR}/${SAMPLE}_combined_R1.fastq.gz ${CONCAT_DIR}/${SAMPLE}_combined_R2.fastq.gz -o ${OUT_DIR}
 
 echo -e "\nInfo: FastQC job completed on $(date) on $(hostname).\n"
 ##End
