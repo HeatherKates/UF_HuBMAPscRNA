@@ -41,8 +41,8 @@ SAMPLE=${SAMPLES[$SLURM_ARRAY_TASK_ID-1]}
 OUT_DIR="/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/results/fastqc"
 
 # Concatenate files from all lanes
-cat ${BASE_DIR1}/${SAMPLE}_*_R1_001.fastq.gz ${BASE_DIR2}/${SAMPLE}_*_R1_001.fastq.gz > ${CONCAT_DIR}/${SAMPLE}_combined_R1.fastq.gz
-cat ${BASE_DIR1}/${SAMPLE}_*_R2_001.fastq.gz ${BASE_DIR2}/${SAMPLE}_*_R2_001.fastq.gz > ${CONCAT_DIR}/${SAMPLE}_combined_R2.fastq.gz
+cat ${BASE_DIR1}/${SAMPLE}*/${SAMPLE}_*_R1_001.fastq.gz ${BASE_DIR2}/${SAMPLE}*/${SAMPLE}_*_R1_001.fastq.gz > ${CONCAT_DIR}/${SAMPLE}_combined_R1.fastq.gz
+cat ${BASE_DIR1}/${SAMPLE}*/${SAMPLE}_*_R2_001.fastq.gz ${BASE_DIR2}/${SAMPLE}*/${SAMPLE}_*_R2_001.fastq.gz > ${CONCAT_DIR}/${SAMPLE}_combined_R2.fastq.gz
 
 # Run FastQC with specified threads
 fastqc --threads 2 ${CONCAT_DIR}/${SAMPLE}_combined_R1.fastq.gz ${CONCAT_DIR}/${SAMPLE}_combined_R2.fastq.gz -o ${OUT_DIR}
