@@ -21,8 +21,8 @@ echo -e "\nInfo: Starting a job on $(date) on $(hostname) in $(pwd).\n"
 
 module load trim_galore/0.6.7
 
-# Define the base directory
-BASE_DIR="/orange/timgarrett/Campbell_Thompson/NS3809/NS-3809_NS3810-MBrusko/NS-3809-MBrusko_10B-22K5WnLT3-Lane4-6"
+# Define the base directory for concatenated files
+BASE_DIR="/orange/timgarrett/Campbell_Thompson/NS3809/Concatenated"
 
 # Create an array of unique sample identifiers dynamically
 SAMPLES=($(ls | cut -d "_" -f 1,2,3 | sort | uniq))
