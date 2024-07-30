@@ -19,7 +19,7 @@ echo -e "\nInfo: Starting a job on $(date) on $(hostname) in $(pwd).\n"
 # This file is to perform trimming and filtering using Trim Galore!
 ###################################################################
 
-module load trim_galore/0.6.7
+module load trim_galore/0.6.10
 
 # Define the base directory for concatenated files
 BASE_DIR="/orange/timgarrett/Campbell_Thompson/NS3809/Concatenated"
