@@ -34,7 +34,7 @@ SAMPLE=${SAMPLES[$SLURM_ARRAY_TASK_ID-1]}
 OUT_DIR="/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/results/trimgalore"
 
 # Define the path to the FastQC summary file
-FASTQC_SUMMARY="/blue/zhangw/hkates/Tanzia_RNAseq/results/fastqc/fastqc_summary.csv"
+FASTQC_SUMMARY="/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/results/fastqc/fastqc_summary.csv"
 
 # Function to determine trim parameters based on FastQC results
 get_trim_params() {

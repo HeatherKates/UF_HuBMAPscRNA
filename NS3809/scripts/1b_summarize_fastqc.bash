@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Directory containing the FastQC zip files
-FASTQC_DIR="/blue/zhangw/hkates/Tanzia_RNAseq/results/fastqc"
+FASTQC_DIR="/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/results/fastqc"
 
 # Output CSV file
 OUTPUT_CSV="${FASTQC_DIR}/fastqc_summary.csv"
