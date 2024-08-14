@@ -6,10 +6,10 @@
 #SBATCH --mem=64GB
 #SBATCH --qos=timgarrett-b
 #SBATCH --account=timgarrett
-#SBATCH -t 24:00:00
+#SBATCH -t 18:00:00
 #SBATCH --output=/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/logs/cellranger.%j.out
 #SBATCH --error=/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/logs/cellranger.%j.err
-#SBATCH --array=2-16
+#SBATCH --array=13-16
 
 echo "This is task $SLURM_ARRAY_TASK_ID"
 

@@ -1,7 +1,10 @@
 #Ignore files in these directories
 NS3809/logs/*
 NS3809/scripts/refdata-gex-GRCh38-2024-A/*
-NS3809/results/trimgalore/*
+NS3809/scripts/*mro
+NS3809/results/cellranger/*
+NS3809/symlinks/*
 #ignore rserver files
 NS3809/rstudio-rserver
 NS3809/rstudio-rsession
+NS3809/results/seurat/*
