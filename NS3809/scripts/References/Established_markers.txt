@@ -1,0 +1,26 @@
+Gene Symbol	Cell Type
+INS	Beta Cells
+IAPP	Beta Cells
+GCG	Alpha Cells
+MKI67	Proliferating Cells; Cycling Alpha Cells
+CDK1	Proliferating Cells; Cycling Alpha Cells
+SST	Delta Cells
+PPY	Gamma Cells
+GHRL	Epsilon Cells
+CFTR	Ductal Cells
+MUC5B	MUC5B+ Ductal Cells
+REG1A	Acinar Cells
+CTRB2	Acinar Cells
+PRSS1	Acinar Cells
+PRSS2	Acinar Cells
+PDGFRB	Stellate Cells
+COL6A1	Stellate Cells
+RGS5	Quiescent Stellate Cells
+PLVAP	Endothelial Cells
+ESAM	Endothelial Cells
+VWF	Endothelial Cells
+KIT	Mast Cells
+CD69	Mast Cells
+C1QA	Macrophages
+C1QB	Macrophages
+C1QC	Macrophages

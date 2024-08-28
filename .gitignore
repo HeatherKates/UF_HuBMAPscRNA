@@ -1,10 +1,12 @@
 #Ignore files in these directories
 NS3809/logs/*
-NS3809/scripts/refdata-gex-GRCh38-2024-A/*
+NS3809/scripts/refdata-gex-GRCh38-2024-A/
+NS3809/scripts/References/azimuth*
 NS3809/scripts/*mro
-NS3809/results/cellranger/*
-NS3809/symlinks/*
+NS3809/results/cellranger/NS*
+NS3809/results/soupx/objects/
+#NS3809/symlinks/*
 #ignore rserver files
 NS3809/rstudio-rserver
 NS3809/rstudio-rsession
-NS3809/results/seurat/*
+NS3809/results/seurat/objects/
