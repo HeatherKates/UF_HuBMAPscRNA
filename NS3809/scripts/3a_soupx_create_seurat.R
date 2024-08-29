@@ -7,16 +7,16 @@ library(DropletUtils)
 library(ggplot2)
 library(DoubletFinder)
 library(knitr)
-
+library(dplyr)
 
 # Define the base path where your data is located
-base_path <- "/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/cellranger"
+base_path <- "/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/cellranger/"
 
 # Define the output path for SoupX-corrected data
 soupx_output_path <- "/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/results/soupx/"
 
 # List all directories matching the pattern
-sample_dirs <- list.dirs(base_path, full.names = TRUE, recursive = FALSE)
+sample_dirs <- Sys.glob(paste0(base_path, "NS*"))
 options(future.globals.maxSize = 40 * 1024^3)
 
 # Function to load, correct with SoupX, filter, and normalize each dataset
@@ -28,8 +28,7 @@ load_correct_and_preprocess_sample <- function(dir) {
   # Load raw and filtered data
   raw.matrix  <- Read10X_h5(raw_data_path, use.names = TRUE)
   filt.matrix <- Read10X_h5(filtered_data_path, use.names = TRUE)
-  sample_name <- basename(dirname(dir))  # Extract sample name from directory path
-  
+  sample_name <- strsplit(dir, "/")[[1]][[10]] # Extract sample name from directory path
   # Create Seurat object from filtered data for clustering
   srat  <- CreateSeuratObject(counts = filt.matrix)
   srat <- SCTransform(srat, verbose = FALSE)
@@ -48,12 +47,12 @@ load_correct_and_preprocess_sample <- function(dir) {
   # Try to estimate contamination and adjust counts
   tryCatch({
     # Redirect the plot output to a file before running autoEstCont
-    pdf(file = paste0(soupx_output_path,"plots/", sample_name, "_contamination_plot.pdf"))
+    pdf(file = paste0(soupx_output_path,"plots/", sample_name, "_contamination_plot.v2.pdf"))
     soup.channel  <- autoEstCont(soup.channel)
     dev.off()  # Close the PDF device
     
     # Save the plot from plotMarkerDistribution
-    pdf(file = paste0(soupx_output_path, sample_name, "_marker_distribution_plot.pdf"))
+    pdf(file = paste0(soupx_output_path,"plots/", sample_name, "_marker_distribution_plot.v2.pdf"))
     plotMarkerDistribution(soup.channel)
     dev.off()  # Close the PDF device
     
@@ -65,13 +64,14 @@ load_correct_and_preprocess_sample <- function(dir) {
     corrected_data <- adjustCounts(soup.channel, roundToInt = TRUE)
     
     # Save the corrected data
-    saveRDS(corrected_data, file = paste0(soupx_output_path, sample_name, "_soupx_corrected.Rds"))
+    saveRDS(corrected_data, file = paste0(soupx_output_path,"objects/", sample_name, "_soupx_corrected.v2.Rds"))
     
     # Create Seurat object from corrected data
     seurat_obj <- CreateSeuratObject(counts = corrected_data, project = sample_name, min.cells = 3, min.features = 200)
     
     # Calculate the percentage of mitochondrial genes
     seurat_obj[["percent.mt"]] <- PercentageFeatureSet(seurat_obj, pattern = "^MT-")
+    seurat_obj[["sample"]] <- sample_name
     
     # Filter cells based on quality metrics
     seurat_obj <- subset(seurat_obj, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
@@ -101,7 +101,7 @@ results_list <- future_lapply(sample_dirs, load_correct_and_preprocess_sample, f
 # Filter out NULL results due to errors
 results_list <- Filter(Negate(is.null), results_list)
 
-saveRDS(results_list, file="/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/objects/3a_soupx_seurats.Rds")
+saveRDS(results_list, file="/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/objects/3a_soupx_seurats.v2.Rds")
 
 # Extract Seurat objects and additional outputs
 seurat_list <- lapply(results_list, `[[`, "seurat_obj")
@@ -116,20 +116,7 @@ seurat_merged <- RunPCA(seurat_merged, verbose = FALSE)
 seurat_merged <- RunUMAP(seurat_merged, dims = 1:30, verbose = FALSE)
 seurat_merged <- FindNeighbors(seurat_merged, dims = 1:30, verbose = FALSE)
 seurat_merged <- FindClusters(seurat_merged, verbose = FALSE, resolution = 0.3,future.seed=TRUE)
-saveRDS(seurat_merged, file="/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/objects/3a_soupx_seurat_merged.Rds")
-
-#oops I forgot to add sample names before merging
-# Step 1: Extract the suffix from cell names to determine the original Seurat object
-cell_names <- colnames(seurat_merged)  # Get the cell names from the merged object
-
-# Use sub to extract the suffix after the last underscore (e.g., "_1", "_2")
-suffixes <- sub(".*_(\\d+)$", "\\1", cell_names)
-
-# Convert suffixes to the corresponding dataset labels
-dataset_labels <- paste0("Sample_", suffixes)
-
-# Step 2: Add the dataset labels to the merged Seurat object
-seurat_merged$dataset <- dataset_labels
+saveRDS(seurat_merged, file="/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/objects/3a_soupx_seurat_merged.v2.Rds")
 
 ########################################################
 ####### Plot marker genes from Elgamal et al. 2024 #####
@@ -149,39 +136,7 @@ variable_markers <- markers %>% filter(Feature %in% top_500_variable_genes)
 top_markers_by_cell_type <- variable_markers %>%
   group_by(CellType) %>%
   slice_head(n = 9)
-
-# Define the output directory
-output_dir <- "/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/plots"
-
-# Initialize an empty list to store the plots
-plots <- list()
-
-# Loop through each CellType, generate FeaturePlots, save them, and store them in the list
-for(cell_type in unique(top_markers_by_cell_type$CellType)) {
-  features <- top_markers_by_cell_type %>% filter(CellType == cell_type) %>% pull(Feature)
-  
-  # Dynamically set ncol based on the number of features
-  n_features <- length(features)
-  if (n_features < 3) {
-    ncol <- n_features
-  } else if (n_features == 4) {
-    ncol <- 2
-  } else {
-    ncol <- 3
-  }
-  
-  # Generate the plot with dynamic ncol
-  plot <- FeaturePlot(seurat_merged, features = features, ncol = ncol)
-  
-  # Store the plot in the list
-  plots[[cell_type]] <- plot
-  
-  # Define the output file path
-  output_file <- file.path(output_dir, paste0(cell_type, "_FeaturePlot.png"))
-  
-  # Save the plot as a high-resolution PNG file
-  ggsave(output_file, plot = plot, dpi = 300, width = 10, height = 8)
-}
+top_markers_by_cell_type$CellType <- gsub("$"," Cells",top_markers_by_cell_type$CellType)
 
 #############################################
 ####### Plot established marker genes #######
@@ -197,37 +152,63 @@ variable_est_markers <- est_markers[est_markers$Feature %in% seurat_merged@assay
 # Define the output directory
 output_dir <- "/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/plots"
 
-# Initialize an empty list to store the plots
-est_plots <- list()
+library(patchwork)
 
-# Loop through each CellType, generate FeaturePlots, save them, and store them in the list
-for(cell_type in unique(variable_est_markers$CellType)) {
-  features <- variable_est_markers %>% filter(CellType == cell_type) %>% pull(Feature)
+# Define the function
+generate_feature_plots <- function(seurat_obj, features_df, features_name, output_dir) {
+  # De-frame the features_df to use its name in titles and filenames
+  features_df_name <- deparse(substitute(features_df))
   
-  # Dynamically set ncol based on the number of features
-  n_features <- length(features)
-  if (n_features < 3) {
-    ncol <- n_features
-  } else if (n_features == 4) {
-    ncol <- 2
-  } else {
-    ncol <- 3
+  # Initialize an empty list to store the plots
+  est_plots <- list()
+  
+  # Loop through each CellType, generate FeaturePlots, save them, and store them in the list
+  for(cell_type in unique(features_df$CellType)) {
+    features <- features_df %>% filter(CellType == cell_type) %>% pull(Feature)
+    
+    # Dynamically set ncol based on the number of features
+    n_features <- length(features)
+    if (n_features < 3) {
+      ncol <- n_features
+    } else if (n_features == 4) {
+      ncol <- 2
+    } else {
+      ncol <- 3
+    }
+    
+    # Generate the plot list to allow for a shared title
+    plot_list <- FeaturePlot(
+      seurat_obj,
+      features = features,
+      combine = FALSE,
+      max.cutoff = 'q98'
+    )
+    
+    # Combine the plots using patchwork and add the title with features_df name
+    combined_plot <- wrap_plots(plot_list, ncol = ncol) + 
+      plot_annotation(title = paste(cell_type, features_name,sep=" "))
+    
+    # Define the output file path with features_df name included
+    output_file <- file.path(output_dir, paste0(cell_type, "_", gsub(" ","_",features_name), "_FeaturePlot.v2.png"))
+    
+    # Save the plot as a high-resolution PNG file
+    ggsave(output_file, plot = combined_plot, width = 10, height = 10, units = "in", dpi = 300)
+    
+    # Store the combined plot in the list with the features_df name
+    est_plots[[paste0(cell_type, "_", features_name)]] <- combined_plot
   }
   
-  # Generate the plot with dynamic ncol
-  plot <- FeaturePlot(seurat_merged, features = features, ncol = ncol)
-  
-  # Store the plot in the list
-  est_plots[[cell_type]] <- plot
-  
-  # Define the output file path
-  output_file <- file.path(output_dir, paste0(cell_type, "_est_markers_FeaturePlot.png"))
-  
-  # Save the plot as a high-resolution PNG file
-  ggsave(output_file, plot = plot, dpi = 300, width = 10, height = 8)
+  # Return the list of plots
+  return(est_plots)
 }
-clusterplot <- DimPlot(seurat_merged)+ggtitle ("Seurat Clusters (98,946 cells from 13 merged samples)")
-ggsave(file.path(output_dir, paste0("plots/ClusterPlot.png")), plot = clusterplot, dpi = 300, width = 10, height = 8)
 
-samplesplot <- DimPlot(seurat_merged,group.by="dataset")+ggtitle ("Donor samples (98,946 cells from 13 merged samples)")
-ggsave(file.path(output_dir, paste0("plots/SamplesPlot.png")), plot = samplesplot, dpi = 300, width = 10, height = 8)
+# Generate plots for established markers
+est_plots <- generate_feature_plots(seurat_merged, variable_est_markers,"variable established markers","/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/plots")
+# Generate plots for additional markers
+addtl_feature_plots <- generate_feature_plots(seurat_merged,top_markers_by_cell_type ,"variable Elgamal et al. top cluster markers","/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/plots")
+
+clusterplot <- DimPlot(seurat_merged)+ggtitle ("Seurat Clusters (98,946 cells from 13 merged samples)")
+ggsave(file.path(output_dir, paste0("ClusterPlot.v2.png")), plot = clusterplot, dpi = 300, width = 10, height = 8)
+
+samplesplot <- DimPlot(seurat_merged,group.by="sample")+ggtitle ("Samples (98,946 cells from 13 merged donor samples)")
+ggsave(file.path(output_dir, paste0("SamplesPlot.v2.png")), plot = samplesplot, dpi = 300, width = 10, height = 8)

@@ -9,7 +9,7 @@
 #SBATCH -t 18:00:00
 #SBATCH --output=/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/logs/cellranger.%j.out
 #SBATCH --error=/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/logs/cellranger.%j.err
-#SBATCH --array=13-16
+#SBATCH --array=1-16
 
 echo "This is task $SLURM_ARRAY_TASK_ID"
 
@@ -26,7 +26,7 @@ BASE_DIR1="/orange/timgarrett/Campbell_Thompson/NS3809/NS-3809_NS3810-MBrusko/NS
 BASE_DIR2="/orange/timgarrett/Campbell_Thompson/NS3809/NS-3809_NS3810-MBrusko/NS-3809-MBrusko_10B-22K5WnLT3-Lane4-6"
 
 # Create an array of unique sample identifiers dynamically
-SAMPLES=($(ls ${BASE_DIR1} | cut -d "_" -f 1,2,3 | sort | uniq))
+SAMPLES=($(ls ${BASE_DIR1} | cut -d "_" -f 1,2,3,4 | sort | uniq))
 
 # Ensure SLURM_ARRAY_TASK_ID starts at 1 (correct usage)
 SAMPLE_INDEX=$(($SLURM_ARRAY_TASK_ID - 1))
