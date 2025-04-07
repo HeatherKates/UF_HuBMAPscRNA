@@ -10,7 +10,7 @@ library(knitr)
 library(dplyr)
 
 # Define the base path where your data is located
-base_path <- "/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/cellranger/"
+base_path <- "NS3809/results/cellranger/"
 
 # Define the output path for SoupX-corrected data
 soupx_output_path <- "/blue/timgarrett/hkates/Campbell-Thompson/scRNA/NS3809/results/soupx/"
@@ -47,12 +47,12 @@ load_correct_and_preprocess_sample <- function(dir) {
   # Try to estimate contamination and adjust counts
   tryCatch({
     # Redirect the plot output to a file before running autoEstCont
-    pdf(file = paste0(soupx_output_path,"plots/", sample_name, "_contamination_plot.v2.pdf"))
+    pdf(file = paste0(soupx_output_path,"plots/", sample_name, "_contamination_plot.pdf"))
     soup.channel  <- autoEstCont(soup.channel)
     dev.off()  # Close the PDF device
     
     # Save the plot from plotMarkerDistribution
-    pdf(file = paste0(soupx_output_path,"plots/", sample_name, "_marker_distribution_plot.v2.pdf"))
+    pdf(file = paste0(soupx_output_path,"plots/", sample_name, "_marker_distribution_plot.pdf"))
     plotMarkerDistribution(soup.channel)
     dev.off()  # Close the PDF device
     
@@ -64,7 +64,7 @@ load_correct_and_preprocess_sample <- function(dir) {
     corrected_data <- adjustCounts(soup.channel, roundToInt = TRUE)
     
     # Save the corrected data
-    saveRDS(corrected_data, file = paste0(soupx_output_path,"objects/", sample_name, "_soupx_corrected.v2.Rds"))
+    saveRDS(corrected_data, file = paste0(soupx_output_path,"objects/", sample_name, "_soupx_corrected.Rds"))
     
     # Create Seurat object from corrected data
     seurat_obj <- CreateSeuratObject(counts = corrected_data, project = sample_name, min.cells = 3, min.features = 200)
@@ -101,7 +101,7 @@ results_list <- future_lapply(sample_dirs, load_correct_and_preprocess_sample, f
 # Filter out NULL results due to errors
 results_list <- Filter(Negate(is.null), results_list)
 
-saveRDS(results_list, file="/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/objects/3a_soupx_seurats.v2.Rds")
+saveRDS(results_list, file="/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/objects/3a_soupx_seurats.Rds")
 
 # Extract Seurat objects and additional outputs
 seurat_list <- lapply(results_list, `[[`, "seurat_obj")
@@ -116,7 +116,7 @@ seurat_merged <- RunPCA(seurat_merged, verbose = FALSE)
 seurat_merged <- RunUMAP(seurat_merged, dims = 1:30, verbose = FALSE)
 seurat_merged <- FindNeighbors(seurat_merged, dims = 1:30, verbose = FALSE)
 seurat_merged <- FindClusters(seurat_merged, verbose = FALSE, resolution = 0.3,future.seed=TRUE)
-saveRDS(seurat_merged, file="/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/objects/3a_soupx_seurat_merged.v2.Rds")
+saveRDS(seurat_merged, file="/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/objects/3a_soupx_seurat_merged.Rds")
 
 ########################################################
 ####### Plot marker genes from Elgamal et al. 2024 #####
@@ -189,7 +189,7 @@ generate_feature_plots <- function(seurat_obj, features_df, features_name, outpu
       plot_annotation(title = paste(cell_type, features_name,sep=" "))
     
     # Define the output file path with features_df name included
-    output_file <- file.path(output_dir, paste0(cell_type, "_", gsub(" ","_",features_name), "_FeaturePlot.v2.png"))
+    output_file <- file.path(output_dir, paste0(cell_type, "_", gsub(" ","_",features_name), "_FeaturePlot.png"))
     
     # Save the plot as a high-resolution PNG file
     ggsave(output_file, plot = combined_plot, width = 10, height = 10, units = "in", dpi = 300)
@@ -208,7 +208,7 @@ est_plots <- generate_feature_plots(seurat_merged, variable_est_markers,"variabl
 addtl_feature_plots <- generate_feature_plots(seurat_merged,top_markers_by_cell_type ,"variable Elgamal et al. top cluster markers","/home/hkates/blue_garrett/Campbell-Thompson/scRNA/NS3809/results/seurat/plots")
 
 clusterplot <- DimPlot(seurat_merged)+ggtitle ("Seurat Clusters (98,946 cells from 13 merged samples)")
-ggsave(file.path(output_dir, paste0("ClusterPlot.v2.png")), plot = clusterplot, dpi = 300, width = 10, height = 8)
+ggsave(file.path(output_dir, paste0("ClusterPlot.png")), plot = clusterplot, dpi = 300, width = 10, height = 8)
 
 samplesplot <- DimPlot(seurat_merged,group.by="sample")+ggtitle ("Samples (98,946 cells from 13 merged donor samples)")
-ggsave(file.path(output_dir, paste0("SamplesPlot.v2.png")), plot = samplesplot, dpi = 300, width = 10, height = 8)
+ggsave(file.path(output_dir, paste0("SamplesPlot.png")), plot = samplesplot, dpi = 300, width = 10, height = 8)

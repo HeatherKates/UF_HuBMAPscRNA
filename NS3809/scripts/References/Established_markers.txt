@@ -1,4 +1,4 @@
-Gene Symbol	Cell Type
+Gene_Symbol	Cell_Type
 INS	Beta Cells
 IAPP	Beta Cells
 GCG	Alpha Cells
