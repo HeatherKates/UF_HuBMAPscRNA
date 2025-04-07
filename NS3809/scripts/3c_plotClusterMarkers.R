@@ -5,7 +5,7 @@ library(future.apply)
 library(SoupX)
 library(DropletUtils)
 library(ggplot2)
-library(DoubletFinder)
+#library(DoubletFinder)
 library(knitr)
 library(dplyr)
 source("utils/assess_clusters.R")
@@ -22,7 +22,6 @@ seurat_merged <- readRDS(file="../results/seurat/objects/3a_soupx_seurat_merged.
 output_dir <- "../results/seurat/plots"
 
 library(patchwork)
-library(Seurat)
 
 seurat_merged <- PrepSCTFindMarkers(seurat_merged)
 ClusterMarkers <- FindAllMarkers(seurat_merged,only.pos = TRUE,logfc.threshold = 0.2,min.diff.pct = .40)
